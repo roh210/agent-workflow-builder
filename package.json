@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:clean": "npm run clean && npm run dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "clean": "rmdir /s /q .next 2>nul || rm -rf .next",
+    "reset": "npm run clean && npm install"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
