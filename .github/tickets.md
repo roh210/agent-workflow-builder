@@ -1,45 +1,50 @@
-AWB-001: Configure Environment Variables
+AWB-002: Initialize Database Schema
 Type: Task
 Priority: P0 - Blocker
 Story Points: 1
 Sprint: Phase 0 - Setup
 Assignee: Roheena
+Blocked By: AWB-001
 Description
-Set up all required environment variables and API keys needed for the application to run.
+Generate Prisma client and push database schema to create all required tables.
 Acceptance Criteria
 
- OpenAI API key is configured and valid
- PostgreSQL database URL is configured
- Application starts without environment errors
- API key has sufficient credits/quota
+ Prisma client is generated without errors
+ All 4 tables exist in database (Workflow, Node, Edge, Execution)
+ Foreign key relationships are correct
+ Indexes are created
 
 Technical Details
-Files to modify:
+Files involved:
 
-.env.local
+prisma/schema.prisma (already created)
+src/lib/db/prisma.ts (already created)
 
-Environment variables needed:
-bashDATABASE_URL="postgresql://username:password@host:5432/agent_workflow_builder"
-OPENAI_API_KEY="sk-..."
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-Steps:
+Commands to run:
+bash# Generate Prisma client (creates types)
+npx prisma generate
 
-Go to https://platform.openai.com/api-keys
-Create new API key, copy it
-Go to https://neon.tech (or Supabase)
-Create new project → copy connection string
-Create .env.local in project root
-Add all three variables
-Verify: npm run dev starts without errors
+# Push schema to database (creates tables)
+npx prisma db push
 
-Resources
+# Optional: Open Prisma Studio to verify
+npx prisma studio
+Expected tables:
+TablePurposeWorkflowStores workflow metadata (name, status)NodeStores nodes with config (JSONB) and output (JSONB)EdgeStores connections between nodesExecutionTracks async execution progress
+Verification:
 
-OpenAI API Keys
-Neon PostgreSQL
-Supabase
+Run npx prisma studio
+Verify all 4 tables appear
+Check that columns match schema
+
+Error Handling
+
+If db push fails with connection error → check DATABASE_URL
+If permission error → check database user has CREATE privileges
 
 Definition of Done
 
- .env.local created with all variables
- npm run dev runs without environment errors
- Sensitive keys not committed to git (check .gitignore)
+ npx prisma generate completes successfully
+ npx prisma db push completes successfully
+ All 4 tables visible in Prisma Studio
+ No TypeScript errors when importing from @prisma/client
