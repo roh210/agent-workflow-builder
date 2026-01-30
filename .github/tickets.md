@@ -1,50 +1,82 @@
-AWB-002: Initialize Database Schema
-Type: Task
-Priority: P0 - Blocker
-Story Points: 1
-Sprint: Phase 0 - Setup
+AWB-003: Create Workflow Canvas Component
+Type: Feature
+Priority: P0 - Critical
+Story Points: 3
+Sprint: Phase 1 - Canvas Foundation
 Assignee: Roheena
-Blocked By: AWB-001
+Blocked By: AWB-002
 Description
-Generate Prisma client and push database schema to create all required tables.
+Create the main canvas component using React Flow where users will build their workflows by adding and connecting nodes.
+User Story
+
+As a user, I want to see an interactive canvas where I can pan, zoom, and eventually add workflow nodes.
+
 Acceptance Criteria
 
- Prisma client is generated without errors
- All 4 tables exist in database (Workflow, Node, Edge, Execution)
- Foreign key relationships are correct
- Indexes are created
+ Canvas renders full-width and full-height
+ User can pan by dragging background
+ User can zoom with scroll wheel
+ Background shows dot grid pattern
+ Minimap shows in bottom-right corner
+ Controls (zoom in/out/fit) show in bottom-left
+ Canvas connects to Zustand store for nodes/edges
 
 Technical Details
-Files involved:
+File to create:
+src/app/components/canvas/WorkflowCanvas.tsx
+Dependencies:
+typescriptimport ReactFlow, {
+  Background,
+  Controls,
+  MiniMap,
+  useNodesState,
+  useEdgesState,
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+Component structure:
+typescript'use client';
 
-prisma/schema.prisma (already created)
-src/lib/db/prisma.ts (already created)
+import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
+import 'reactflow/dist/style.css';
+import { useWorkflowStore } from '@/store/workflow-store';
 
-Commands to run:
-bash# Generate Prisma client (creates types)
-npx prisma generate
+export function WorkflowCanvas() {
+  const nodes = useWorkflowStore((state) => state.nodes);
+  const edges = useWorkflowStore((state) => state.edges);
+  
+  // TODO: Convert store nodes to React Flow format
+  // TODO: Handle onNodesChange, onEdgesChange, onConnect
+  
+  return (
+    <div className="w-full h-full">
+      <ReactFlow
+        nodes={[]}
+        edges={[]}
+        fitView
+      >
+        <Background />
+        <Controls />
+        <MiniMap />
+      </ReactFlow>
+    </div>
+  );
+}
+Key callbacks to implement:
 
-# Push schema to database (creates tables)
-npx prisma db push
+onNodesChange → update positions in store
+onEdgesChange → handle edge deletion
+onConnect → add new edge (with validation)
+onNodeClick → select node
 
-# Optional: Open Prisma Studio to verify
-npx prisma studio
-Expected tables:
-TablePurposeWorkflowStores workflow metadata (name, status)NodeStores nodes with config (JSONB) and output (JSONB)EdgeStores connections between nodesExecutionTracks async execution progress
-Verification:
+Learning Resources
 
-Run npx prisma studio
-Verify all 4 tables appear
-Check that columns match schema
-
-Error Handling
-
-If db push fails with connection error → check DATABASE_URL
-If permission error → check database user has CREATE privileges
+React Flow Docs
+Sim Studio: apps/sim/app/components/workflow-canvas.tsx
 
 Definition of Done
 
- npx prisma generate completes successfully
- npx prisma db push completes successfully
- All 4 tables visible in Prisma Studio
- No TypeScript errors when importing from @prisma/client
+ Component renders without errors
+ Pan and zoom work smoothly
+ Background grid visible
+ Controls and minimap visible
+ No console errors
