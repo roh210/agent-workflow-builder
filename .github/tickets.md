@@ -1,93 +1,50 @@
-AWB-004: Create Node Sidebar Component
+AWB-005: Update Main Page Layout
 Type: Feature
 Priority: P0 - Critical
-Story Points: 2
+Story Points: 1
 Sprint: Phase 1 - Canvas Foundation
 Assignee: Roheena
+Blocked By: AWB-003, AWB-004
 Description
-Create a sidebar that displays all 7 node types that users can drag onto the canvas.
+Update the main page to display the sidebar and canvas in a proper layout.
 User Story
 
-As a user, I want to see a list of available node types so I can drag them onto my workflow canvas.
+As a user, I want to see the node sidebar on the left and the canvas taking up the remaining space.
 
 Acceptance Criteria
 
- Sidebar shows on left side of screen
- All 7 node types displayed with icon and label
- Nodes are draggable
- Dragging node to canvas creates new node at drop position
- Visual feedback when dragging (cursor change, ghost element)
+ Page fills full viewport height
+ Sidebar fixed width on left (256px / w-64)
+ Canvas fills remaining space
+ No scrollbars on main layout
+ Responsive (sidebar collapses on mobile - stretch goal)
 
 Technical Details
-File to create:
-src/app/components/panels/NodeSidebar.tsx
-Node types to display:
-Node TypeIcon SuggestionColorData InputInputBlueWeb ScrapingGlobeGreenStructured OutputBracesPurpleEmbedding GeneratorBoxOrangeSimilarity SearchSearchCyanLLM TaskBotPinkData OutputOutputGray
-Drag implementation:
-typescript// On sidebar item
-const onDragStart = (event: DragEvent, nodeType: NodeType) => {
-  event.dataTransfer.setData('application/reactflow', nodeType);
-  event.dataTransfer.effectAllowed = 'move';
-};
+File to modify:
+src/app/page.tsx
+Layout structure:
+typescriptimport { WorkflowCanvas } from '@/app/components/canvas/WorkflowCanvas';
+import { NodeSidebar } from '@/app/components/panels/NodeSidebar';
 
-// On canvas (in WorkflowCanvas.tsx)
-const onDrop = (event: DragEvent) => {
-  const type = event.dataTransfer.getData('application/reactflow');
-  const position = reactFlowInstance.screenToFlowPosition({
-    x: event.clientX,
-    y: event.clientY,
-  });
-  addNode(type as NodeType, position);
-};
-
-const onDragOver = (event: DragEvent) => {
-  event.preventDefault();
-  event.dataTransfer.dropEffect = 'move';
-};
-Component structure:
-typescript'use client';
-
-import { NodeType } from '@/types';
-
-const NODE_TYPES = [
-  { type: NodeType.DATA_INPUT, label: 'Data Input', icon: '📥' },
-  { type: NodeType.WEB_SCRAPING, label: 'Web Scraper', icon: '🌐' },
-  // ... etc
-];
-
-export function NodeSidebar() {
-  const onDragStart = (e: React.DragEvent, type: NodeType) => {
-    e.dataTransfer.setData('application/reactflow', type);
-  };
-
+export default function Home() {
   return (
-    <aside className="w-64 border-r bg-gray-50 p-4">
-      <h2 className="font-semibold mb-4">Nodes</h2>
-      <div className="space-y-2">
-        {NODE_TYPES.map((node) => (
-          <div
-            key={node.type}
-            draggable
-            onDragStart={(e) => onDragStart(e, node.type)}
-            className="p-3 bg-white rounded border cursor-grab hover:border-blue-500"
-          >
-            <span className="mr-2">{node.icon}</span>
-            {node.label}
-          </div>
-        ))}
+    <main className="h-screen flex">
+      <NodeSidebar />
+      <div className="flex-1">
+        <WorkflowCanvas />
       </div>
-    </aside>
+    </main>
   );
 }
-Learning Resources
-
-React Flow Drag and Drop
-HTML Drag and Drop API
-
+Also update layout:
+src/app/layout.tsx
+typescript// Ensure no padding/margin on body
+<body className={`${inter.className} overflow-hidden`}>
+  {children}
+</body>
 Definition of Done
 
- Sidebar renders with all 7 node types
- Each node type shows icon and label
- Drag cursor appears on hover
- Dragging works (visual feedback)
- Drop on canvas creates node (requires AWB-003)
+ Layout renders correctly
+ No unwanted scrollbars
+ Sidebar and canvas both visible
+ Drag from sidebar to canvas works end-to-end
