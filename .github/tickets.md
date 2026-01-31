@@ -1,82 +1,93 @@
-AWB-003: Create Workflow Canvas Component
+AWB-004: Create Node Sidebar Component
 Type: Feature
 Priority: P0 - Critical
-Story Points: 3
+Story Points: 2
 Sprint: Phase 1 - Canvas Foundation
 Assignee: Roheena
-Blocked By: AWB-002
 Description
-Create the main canvas component using React Flow where users will build their workflows by adding and connecting nodes.
+Create a sidebar that displays all 7 node types that users can drag onto the canvas.
 User Story
 
-As a user, I want to see an interactive canvas where I can pan, zoom, and eventually add workflow nodes.
+As a user, I want to see a list of available node types so I can drag them onto my workflow canvas.
 
 Acceptance Criteria
 
- Canvas renders full-width and full-height
- User can pan by dragging background
- User can zoom with scroll wheel
- Background shows dot grid pattern
- Minimap shows in bottom-right corner
- Controls (zoom in/out/fit) show in bottom-left
- Canvas connects to Zustand store for nodes/edges
+ Sidebar shows on left side of screen
+ All 7 node types displayed with icon and label
+ Nodes are draggable
+ Dragging node to canvas creates new node at drop position
+ Visual feedback when dragging (cursor change, ghost element)
 
 Technical Details
 File to create:
-src/app/components/canvas/WorkflowCanvas.tsx
-Dependencies:
-typescriptimport ReactFlow, {
-  Background,
-  Controls,
-  MiniMap,
-  useNodesState,
-  useEdgesState,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+src/app/components/panels/NodeSidebar.tsx
+Node types to display:
+Node TypeIcon SuggestionColorData InputInputBlueWeb ScrapingGlobeGreenStructured OutputBracesPurpleEmbedding GeneratorBoxOrangeSimilarity SearchSearchCyanLLM TaskBotPinkData OutputOutputGray
+Drag implementation:
+typescript// On sidebar item
+const onDragStart = (event: DragEvent, nodeType: NodeType) => {
+  event.dataTransfer.setData('application/reactflow', nodeType);
+  event.dataTransfer.effectAllowed = 'move';
+};
+
+// On canvas (in WorkflowCanvas.tsx)
+const onDrop = (event: DragEvent) => {
+  const type = event.dataTransfer.getData('application/reactflow');
+  const position = reactFlowInstance.screenToFlowPosition({
+    x: event.clientX,
+    y: event.clientY,
+  });
+  addNode(type as NodeType, position);
+};
+
+const onDragOver = (event: DragEvent) => {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+};
 Component structure:
 typescript'use client';
 
-import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
-import 'reactflow/dist/style.css';
-import { useWorkflowStore } from '@/store/workflow-store';
+import { NodeType } from '@/types';
 
-export function WorkflowCanvas() {
-  const nodes = useWorkflowStore((state) => state.nodes);
-  const edges = useWorkflowStore((state) => state.edges);
-  
-  // TODO: Convert store nodes to React Flow format
-  // TODO: Handle onNodesChange, onEdgesChange, onConnect
-  
+const NODE_TYPES = [
+  { type: NodeType.DATA_INPUT, label: 'Data Input', icon: '📥' },
+  { type: NodeType.WEB_SCRAPING, label: 'Web Scraper', icon: '🌐' },
+  // ... etc
+];
+
+export function NodeSidebar() {
+  const onDragStart = (e: React.DragEvent, type: NodeType) => {
+    e.dataTransfer.setData('application/reactflow', type);
+  };
+
   return (
-    <div className="w-full h-full">
-      <ReactFlow
-        nodes={[]}
-        edges={[]}
-        fitView
-      >
-        <Background />
-        <Controls />
-        <MiniMap />
-      </ReactFlow>
-    </div>
+    <aside className="w-64 border-r bg-gray-50 p-4">
+      <h2 className="font-semibold mb-4">Nodes</h2>
+      <div className="space-y-2">
+        {NODE_TYPES.map((node) => (
+          <div
+            key={node.type}
+            draggable
+            onDragStart={(e) => onDragStart(e, node.type)}
+            className="p-3 bg-white rounded border cursor-grab hover:border-blue-500"
+          >
+            <span className="mr-2">{node.icon}</span>
+            {node.label}
+          </div>
+        ))}
+      </div>
+    </aside>
   );
 }
-Key callbacks to implement:
-
-onNodesChange → update positions in store
-onEdgesChange → handle edge deletion
-onConnect → add new edge (with validation)
-onNodeClick → select node
-
 Learning Resources
 
-React Flow Docs
-Sim Studio: apps/sim/app/components/workflow-canvas.tsx
+React Flow Drag and Drop
+HTML Drag and Drop API
 
 Definition of Done
 
- Component renders without errors
- Pan and zoom work smoothly
- Background grid visible
- Controls and minimap visible
- No console errors
+ Sidebar renders with all 7 node types
+ Each node type shows icon and label
+ Drag cursor appears on hover
+ Dragging works (visual feedback)
+ Drop on canvas creates node (requires AWB-003)
