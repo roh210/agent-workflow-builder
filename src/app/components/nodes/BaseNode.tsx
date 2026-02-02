@@ -1,4 +1,5 @@
 "use client";
+import { colorClasses } from "@/lib/constants/color";
 import { cn } from "@/lib/utils/cn";
 import { NodeStatus } from "@/types";
 import { Handle, Position } from "@reactflow/core";
@@ -12,16 +13,6 @@ interface BaseNodeProps {
   color?: string;
   children?: React.ReactNode;
 }
-
-const colorClasses: Record<string, string> = {
-  gray: "bg-gray-100",
-  pink: "bg-pink-100",
-  blue: "bg-blue-100",
-  green: "bg-green-100",
-  purple: "bg-purple-100",
-  orange: "bg-orange-100",
-  cyan: "bg-cyan-100",
-};
 
 export const BaseNode: React.FC<BaseNodeProps> = memo(function BaseNode({
   label,
@@ -47,9 +38,9 @@ export const BaseNode: React.FC<BaseNodeProps> = memo(function BaseNode({
         position={Position.Top}
         className="w-3 h-3 bg-gray-400 border-2 border-white"
       />
-      <div className={cn("p-4 flex flex-row items-center gap-2", colorClasses[color])}>
+      <div className={cn("p-4 flex flex-row items-center gap-2 rounded-t-md", colorClasses[color])}>
         <span>{icon}</span>
-        <span className="font-semibold text-center">{label}</span>
+        <span className="font-semibold text-center text-gray-800">{label}</span>
         <StatusIndicator status={status} />
       </div>
       {children && (
@@ -69,8 +60,8 @@ const StatusIndicator: React.FC<{ status: NodeStatus }> = ({ status }) => {
   return (
     <span className="ml-auto">
       {status === NodeStatus.RUNNING && "⏳"}
-      {status === NodeStatus.SUCCESS && "✓"}
-      {status === NodeStatus.ERROR && "✗"}
+      {status === NodeStatus.SUCCESS && "✅"}
+      {status === NodeStatus.ERROR && "❌"}
     </span>
   );
 };

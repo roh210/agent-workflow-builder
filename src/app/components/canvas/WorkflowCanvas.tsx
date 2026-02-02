@@ -15,8 +15,11 @@ import "reactflow/dist/style.css";
 import { useWorkflowStore } from "@/store/workflow-store";
 import React, { useCallback, useMemo } from "react";
 import { NodeType } from "@/types";
+import { DataInputNode } from "../nodes/DataInputNode";
 
-const nodeTypes = {};
+const nodeTypes = {
+  dataInput: DataInputNode,
+};
 const edgeTypes = {};
 
 export const WorkflowCanvas: React.FC = () => {
@@ -38,11 +41,9 @@ export const WorkflowCanvas: React.FC = () => {
       storeNodes.map((node) => {
         return {
           id: node.id,
-          type: "default",
+          type: node.type,
           position: node.position,
-          data: {
-            label: node.type,
-          },
+          data: node.data,
         };
       }),
     [storeNodes],
@@ -111,7 +112,7 @@ export const WorkflowCanvas: React.FC = () => {
     },
     [reactFlowInstance, storeAddNode],
   );
-  
+
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";

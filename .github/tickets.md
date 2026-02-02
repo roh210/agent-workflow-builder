@@ -1,118 +1,65 @@
-AWB-006: Create Base Node Component
+AWB-007: Create Data Input Node
 Type: Feature
 Priority: P0 - Critical
-Story Points: 3
+Story Points: 2
 Sprint: Phase 2 - Node Components
 Assignee: Roheena
-Blocked By: AWB-005
+Blocked By: AWB-006
 Description
-Create a reusable base node component that all 7 node types will extend. This ensures consistent styling and behavior.
+Create the Data Input node component - the entry point for all workflows.
 User Story
 
-As a developer, I want a base node component so all nodes have consistent handles, selection states, and status indicators.
+As a user, I want a Data Input node so I can provide initial data to start my workflow.
 
 Acceptance Criteria
 
- Base node has input handle (top) and output handle (bottom)
- Shows node label/title
- Visual indication when selected (border color change)
- Status indicator (idle/running/success/error)
- Consistent sizing and padding
- Accepts children for node-specific content
+ Extends BaseNode styling
+ Shows input type (text/json/file)
+ Shows placeholder preview if configured
+ Distinct icon/color (blue)
+ Works when dropped on canvas
 
 Technical Details
 File to create:
-src/app/components/nodes/BaseNode.tsx
-Props interface:
-typescriptinterface BaseNodeProps {
-  label: string;
-  status: NodeStatus;
-  selected: boolean;
-  children?: React.ReactNode;
-  color?: string; // Border/accent color for node type
-  icon?: React.ReactNode;
-}
-Component structure:
+src/app/components/nodes/DataInputNode.tsx
+Component:
 typescript'use client';
 
 import { memo } from 'react';
-import { Handle, Position } from 'reactflow';
-import { cn } from '@/lib/utils/cn';
-import { NodeStatus } from '@/types';
+import { NodeProps } from 'reactflow';
+import { BaseNode } from './BaseNode';
+import type { NodeData, DataInputNodeConfig } from '@/types';
 
-interface BaseNodeProps {
-  label: string;
-  status: NodeStatus;
-  selected: boolean;
-  children?: React.ReactNode;
-  color?: string;
-  icon?: React.ReactNode;
-}
-
-export const BaseNode = memo(function BaseNode({
-  label,
-  status,
+export const DataInputNode = memo(function DataInputNode({
+  data,
   selected,
-  children,
-  color = 'gray',
-  icon,
-}: BaseNodeProps) {
+}: NodeProps<NodeData>) {
+  const config = data.config as DataInputNodeConfig;
+
   return (
-    <div
-      className={cn(
-        'min-w-[180px] bg-white rounded-lg border-2 shadow-sm',
-        selected ? 'border-blue-500 shadow-md' : 'border-gray-200',
-        status === NodeStatus.RUNNING && 'border-yellow-500',
-        status === NodeStatus.SUCCESS && 'border-green-500',
-        status === NodeStatus.ERROR && 'border-red-500'
-      )}
+    <BaseNode
+      label={data.label}
+      status={data.status}
+      selected={selected}
+      color="blue"
+      icon={<span>📥</span>}
     >
-      {/* Input Handle */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-3 h-3 bg-gray-400 border-2 border-white"
-      />
-
-      {/* Header */}
-      <div className={cn('px-3 py-2 border-b flex items-center gap-2', `bg-${color}-50`)}>
-        {icon}
-        <span className="font-medium text-sm">{label}</span>
-        <StatusIndicator status={status} />
+      <div className="text-xs text-gray-500">
+        Type: {config.inputType}
       </div>
-
-      {/* Content */}
-      {children && (
-        <div className="px-3 py-2 text-xs text-gray-600">
-          {children}
+      {config.placeholder && (
+        <div className="text-xs text-gray-400 truncate">
+          "{config.placeholder}"
         </div>
       )}
-
-      {/* Output Handle */}
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-3 h-3 bg-gray-400 border-2 border-white"
-      />
-    </div>
+    </BaseNode>
   );
 });
 
-function StatusIndicator({ status }: { status: NodeStatus }) {
-  if (status === NodeStatus.IDLE) return null;
-  
-  return (
-    <span className="ml-auto">
-      {status === NodeStatus.RUNNING && '⏳'}
-      {status === NodeStatus.SUCCESS && '✓'}
-      {status === NodeStatus.ERROR && '✗'}
-    </span>
-  );
-}
+DataInputNode.displayName = 'DataInputNode';
 Definition of Done
 
- Component renders with handles
- Selection styling works
- Status indicator shows correctly
- Children render in content area
- Component is memoized for performance
+ Node renders correctly on canvas
+ Shows input type from config
+ Selection state works
+ Can be connected to other nodes
