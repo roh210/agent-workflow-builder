@@ -111,7 +111,7 @@ const getDefaultLabel = (type: NodeType): string => {
     [NodeType.EMBEDDING_GENERATOR]: 'Embeddings',
     [NodeType.SIMILARITY_SEARCH]: 'Similarity Search',
     [NodeType.LLM_TASK]: 'LLM Task',
-    [NodeType.DATA_OUTPUT]: 'Output',
+    [NodeType.DATA_OUTPUT]: ' Data Output',
   };
   return labels[type];
 };

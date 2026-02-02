@@ -16,9 +16,21 @@ import { useWorkflowStore } from "@/store/workflow-store";
 import React, { useCallback, useMemo } from "react";
 import { NodeType } from "@/types";
 import { DataInputNode } from "../nodes/DataInputNode";
+import { DataOutputNode } from "../nodes/DataOutput";
+import { EmbeddingNode } from "../nodes/Embedding";
+import { LLMTaskNode } from "../nodes/LLMTask";
+import { SimilaritySearchNode } from "../nodes/SimilaritySearch";
+import { StructuredOutputNode } from "../nodes/StructuredOutput";
+import { WebScrapingNode } from "../nodes/WebScraping";
 
 const nodeTypes = {
   dataInput: DataInputNode,
+  dataOutput: DataOutputNode,
+  embeddingGenerator: EmbeddingNode,
+  llmTask: LLMTaskNode,
+  similaritySearch: SimilaritySearchNode,
+  structuredOutput: StructuredOutputNode,
+  webScraping: WebScrapingNode
 };
 const edgeTypes = {};
 

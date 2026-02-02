@@ -7,7 +7,7 @@ export const NODE_TYPE_CONFIG = [
     {type: NodeType.EMBEDDING_GENERATOR, label: 'Embeddings', icon:'🧠', color: 'pink'},
     {type: NodeType.SIMILARITY_SEARCH, label: 'Similarity Search', icon:'🔍', color: 'yellow'},
     {type: NodeType.LLM_TASK, label: 'LLM Task', icon:'🤖', color: 'orange'},
-    {type: NodeType.DATA_OUTPUT, label: 'Output', icon:'📤', color: 'gray'}    ,
+    {type: NodeType.DATA_OUTPUT, label: 'Data Output', icon:'📤', color: 'gray'}    ,
 ] as const;
 
 export const getNodeTypeConfig = (type: NodeType) => {
