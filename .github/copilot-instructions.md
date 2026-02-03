@@ -43,6 +43,9 @@ Modular Monolith with Next.js 14:
 ```typescript
 // ✓ Use @/ prefix
 import { useWorkflowStore } from '@/store/workflow-store';
+
+// ✓ Use barrel exports (index.ts) for folders
+import { DataInputNode } from '@/app/components/nodes';
 ```
 
 ### State Updates

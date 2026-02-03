@@ -1,55 +1,61 @@
-AWB-008: Create Remaining Node Components
+AWB-009: Create Node Types Registry
 Type: Feature
 Priority: P0 - Critical
-Story Points: 5
+Story Points: 1
 Sprint: Phase 2 - Node Components
 Assignee: Roheena
-Blocked By: AWB-007
+Blocked By: AWB-008
 Description
-Create the remaining 6 node components following the same pattern as DataInputNode.
+Create a registry that maps node types to their React components for React Flow.
 Acceptance Criteria
 
- WebScrapingNode created and working
- StructuredOutputNode created and working
- EmbeddingNode created and working
- SimilaritySearchNode created and working
- LLMTaskNode created and working
- DataOutputNode created and working
+ All 7 node types registered
+ Registry exported from index file
+ Canvas uses registry for nodeTypes prop
 
 Technical Details
-Files to create:
-FileColorIconShowsWebScrapingNode.tsxgreen🌐URL, summarize toggleStructuredOutputNode.tsxpurple{}Schema typeEmbeddingNode.tsxorange📦Model nameSimilaritySearchNode.tsxcyan🔍Top K valueLLMTaskNode.tsxpink🤖Model, temperatureDataOutputNode.tsxgray📤Output format
-Pattern to follow:
-typescript'use client';
+File to create:
+src/app/components/nodes/index.ts
+typescriptimport { DataInputNode } from './DataInputNode';
+import { WebScrapingNode } from './WebScrapingNode';
+import { StructuredOutputNode } from './StructuredOutputNode';
+import { EmbeddingNode } from './EmbeddingNode';
+import { SimilaritySearchNode } from './SimilaritySearchNode';
+import { LLMTaskNode } from './LLMTaskNode';
+import { DataOutputNode } from './DataOutputNode';
+import { NodeType } from '@/types';
 
-import { memo } from 'react';
-import { NodeProps } from 'reactflow';
-import { BaseNode } from './BaseNode';
-import type { NodeData, XxxNodeConfig } from '@/types';
+export const nodeTypes = {
+  [NodeType.DATA_INPUT]: DataInputNode,
+  [NodeType.WEB_SCRAPING]: WebScrapingNode,
+  [NodeType.STRUCTURED_OUTPUT]: StructuredOutputNode,
+  [NodeType.EMBEDDING_GENERATOR]: EmbeddingNode,
+  [NodeType.SIMILARITY_SEARCH]: SimilaritySearchNode,
+  [NodeType.LLM_TASK]: LLMTaskNode,
+  [NodeType.DATA_OUTPUT]: DataOutputNode,
+};
 
-export const XxxNode = memo(function XxxNode({
-  data,
-  selected,
-}: NodeProps<NodeData>) {
-  const config = data.config as XxxNodeConfig;
+export {
+  DataInputNode,
+  WebScrapingNode,
+  StructuredOutputNode,
+  EmbeddingNode,
+  SimilaritySearchNode,
+  LLMTaskNode,
+  DataOutputNode,
+};
+Update WorkflowCanvas.tsx:
+typescriptimport { nodeTypes } from '@/app/components/nodes';
 
-  return (
-    <BaseNode
-      label={data.label}
-      status={data.status}
-      selected={selected}
-      color="xxx"
-      icon={<span>🔷</span>}
-    >
-      {/* Node-specific preview content */}
-    </BaseNode>
-  );
-});
-
-XxxNode.displayName = 'XxxNode';
+<ReactFlow
+  nodes={nodes}
+  edges={edges}
+  nodeTypes={nodeTypes}  // Add this
+  // ...
+>
 Definition of Done
 
- All 6 nodes created
- All nodes render on canvas
- All nodes show relevant config preview
- No TypeScript errors
+ Registry file created
+ Canvas uses nodeTypes
+ All 7 node types render correctly on canvas
+ Commit: feat: add 7 node type components

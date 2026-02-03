@@ -70,6 +70,17 @@ import { useWorkflowStore } from '@/store/workflow-store';
 import { useWorkflowStore } from '../../../store';
 ```
 
+### Barrel Exports
+```typescript
+// Use index.ts to re-export from folders
+// components/nodes/index.ts
+export { DataInputNode } from './DataInputNode';
+export { LLMTaskNode } from './LLMTask';
+
+// Then import from folder:
+import { DataInputNode, LLMTaskNode } from '@/app/components/nodes';
+```
+
 ### State Updates
 ```typescript
 // ✓ Always immutable
