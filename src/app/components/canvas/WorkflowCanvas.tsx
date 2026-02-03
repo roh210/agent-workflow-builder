@@ -29,6 +29,8 @@ export const WorkflowCanvas: React.FC = () => {
     (state) => state.setNodePosition,
   );
   const storeAddNode = useWorkflowStore((state) => state.addNode);
+  const storeSelectNode = useWorkflowStore((state) => state.selectNode);
+
   const [reactFlowInstance, setReactFlowInstance] =
     React.useState<ReactFlowInstance | null>(null);
 
@@ -86,6 +88,17 @@ export const WorkflowCanvas: React.FC = () => {
     [storeRemoveEdge],
   );
 
+  const onNodeClick = useCallback(
+    (_: React.MouseEvent, node: Node) => {
+      storeSelectNode(node.id);
+    },
+    [storeSelectNode],
+  );
+
+  const onPanelClick = useCallback(() => {
+    storeSelectNode(null);
+  }, [storeSelectNode]);
+
   const onConnect = useCallback(
     (connection: Connection) => {
       if (connection.source && connection.target) {
@@ -128,6 +141,8 @@ export const WorkflowCanvas: React.FC = () => {
         onDrop={onDrop}
         onDragOver={onDragOver}
         onInit={setReactFlowInstance}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPanelClick}
         fitView
       >
         <Background />

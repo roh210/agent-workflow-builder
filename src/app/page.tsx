@@ -1,4 +1,5 @@
 import { WorkflowCanvas } from "./components/canvas/WorkflowCanvas";
+import { ConfigPanel } from "./components/panels/ConfigPanel";
 import { NodeSideBar } from "./components/panels/NodeSideBar";
 
 export default function Home() {
@@ -8,6 +9,7 @@ export default function Home() {
       <div className="flex-1">
       <WorkflowCanvas/>
      </div>
+     <ConfigPanel/>
     </main>
   );
 }
