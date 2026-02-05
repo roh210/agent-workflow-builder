@@ -9,7 +9,7 @@ export const LLMTaskNode = memo(function LLMTaskNode({
   selected,
 }: NodeProps<NodeData>) {
   const typeConfig = getNodeTypeConfig(NodeType.LLM_TASK);
-  const {model,temperature} = data.config as LLMTaskNodeConfig;
+  const { model, temperature } = data.config as LLMTaskNodeConfig;
 
   return (
     <BaseNode
@@ -20,11 +20,9 @@ export const LLMTaskNode = memo(function LLMTaskNode({
       selected={selected}
     >
       <div className="text-xs text-gray-500">Model: {model}</div>
-      {temperature && (
-        <div className="text-xs text-gray-400 truncate">
-          Temperature: {temperature}
-        </div>
-      )}
+      <div className="text-xs text-gray-400 truncate">
+        Temperature: {temperature}
+      </div>
     </BaseNode>
   );
 });

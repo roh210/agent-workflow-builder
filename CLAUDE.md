@@ -58,6 +58,72 @@ src/
 2. **Composition Over Complexity**: Break complex logic into smaller pieces
 3. **Type Safety First**: TypeScript interfaces for all props, state, return types
 4. **Predictable State**: Zustand for global state, useState for UI-only
+5. **DRY (Don't Repeat Yourself)**: Extract reusable logic, constants, and types
+
+## Code Optimization Patterns
+
+### When to Refactor
+- **3+ copies of similar code** → Extract to function/hook/component
+- **Long switch statements** → Use mapping objects
+- **Repeated prop interfaces** → Create generic base types
+- **Duplicate constants** → Centralize in `lib/constants/`
+- **Complex components (>200 lines)** → Break into smaller pieces
+
+### Custom Hooks for Shared Logic
+```typescript
+// ✓ Extract repeated store logic
+// hooks/useNodeConfig.ts
+export const useNodeConfig = <T>(nodeId: string) => {
+  const updateNodeConfig = useWorkflowStore((state) => state.updateNodeConfig);
+  const handleChange = (field: keyof T, value: any) => {
+    updateNodeConfig(nodeId, { [field]: value });
+  };
+  return { handleChange };
+};
+
+// Usage in component
+const { handleChange } = useNodeConfig<DataInputNodeConfig>(nodeId);
+```
+
+### Generic Types for Reusable Interfaces
+```typescript
+// ✓ Create base interfaces
+// types/config.ts
+export interface BaseNodeConfigProps<T> {
+  nodeId: string;
+  config: T;
+}
+
+// ✗ Don't repeat in every file
+interface DataInputConfigProps {
+  nodeId: string;
+  config: DataInputNodeConfig;
+}
+interface WebScrapingConfigProps {
+  nodeId: string;
+  config: WebScrapingNodeConfig;
+}
+```
+
+### Constants Extraction
+```typescript
+// ✓ Centralize repeated values
+// lib/constants/forms.ts
+export const INPUT_CLASSNAME = "w-full border border-gray-600 bg-gray-800...";
+
+// ✗ Don't hardcode in every file
+const inputClassName = "w-full border border-gray-600 bg-gray-800...";
+```
+
+### Refactoring Checklist
+- [ ] Are there 3+ similar components/functions?
+- [ ] Can logic be extracted to a custom hook?
+- [ ] Are there repeated type definitions?
+- [ ] Are constants duplicated across files?
+- [ ] Is a switch statement mapping types to components?
+- [ ] Does the component exceed 200 lines?
+
+> **Learning Goal**: Refactoring teaches you to recognize patterns and maintain clean codebases - essential senior dev skills.
 
 ## Conventions
 
@@ -79,6 +145,26 @@ export { LLMTaskNode } from './LLMTask';
 
 // Then import from folder:
 import { DataInputNode, LLMTaskNode } from '@/app/components/nodes';
+```
+
+### Mapping Objects Over Switch Statements
+```typescript
+// ✓ Preferred: Type-safe mapping
+const CONFIG_COMPONENTS: Record<NodeType, React.FC<Props>> = {
+  [NodeType.DATA_INPUT]: DataInputConfig,
+  [NodeType.WEB_SCRAPING]: WebScrapingConfig,
+};
+
+const Component = CONFIG_COMPONENTS[selectedNode.type];
+return <Component {...props} />;
+
+// ✗ Avoid: Verbose switch statements
+switch (selectedNode.type) {
+  case NodeType.DATA_INPUT:
+    return <DataInputConfig {...props} />;
+  case NodeType.WEB_SCRAPING:
+    return <WebScrapingConfig {...props} />;
+}
 ```
 
 ### State Updates

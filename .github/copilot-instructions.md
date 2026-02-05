@@ -36,6 +36,57 @@ Modular Monolith with Next.js 14:
 2. **Composition Over Complexity** - Break down complex logic
 3. **Type Safety First** - Interfaces for everything
 4. **Predictable State** - Zustand global, useState local
+5. **DRY (Don't Repeat Yourself)** - Extract reusable patterns
+
+## Code Quality & Refactoring
+
+### When to Refactor
+- **3+ copies of similar code** → Extract to function/hook/component
+- **Long switch statements** → Use mapping objects
+- **Repeated prop interfaces** → Create generic base types
+- **Duplicate constants** → Centralize in `lib/constants/`
+
+### Optimization Patterns
+
+**Custom Hooks for Shared Logic**
+```typescript
+// Extract repeated store logic
+export const useNodeConfig = <T>(nodeId: string) => {
+  const updateNodeConfig = useWorkflowStore((state) => state.updateNodeConfig);
+  const handleChange = (field: keyof T, value: any) => {
+    updateNodeConfig(nodeId, { [field]: value });
+  };
+  return { handleChange };
+};
+```
+
+**Generic Types for Reusability**
+```typescript
+// types/config.ts
+export interface BaseNodeConfigProps<T> {
+  nodeId: string;
+  config: T;
+}
+
+// Usage
+const MyConfig = ({ nodeId, config }: BaseNodeConfigProps<DataInputNodeConfig>) => {
+```
+
+**Mapping Objects Over Switch**
+```typescript
+const CONFIG_COMPONENTS: Record<NodeType, React.FC<Props>> = {
+  [NodeType.DATA_INPUT]: DataInputConfig,
+  [NodeType.WEB_SCRAPING]: WebScrapingConfig,
+};
+
+const Component = CONFIG_COMPONENTS[type];
+```
+
+**Constants Extraction**
+```typescript
+// lib/constants/forms.ts
+export const INPUT_CLASSNAME = "w-full border...";
+```
 
 ## Code Conventions
 

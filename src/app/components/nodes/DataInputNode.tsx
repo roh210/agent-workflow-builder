@@ -9,7 +9,7 @@ export const DataInputNode = memo(function DataInputNode({
   selected,
 }: NodeProps<NodeData>) {
   const typeConfig = getNodeTypeConfig(NodeType.DATA_INPUT);
-  const {inputType, placeholder} = data.config as DataInputNodeConfig;
+  const {inputType, placeholder, defaultValue} = data.config as DataInputNodeConfig;
 
   return (
     <BaseNode
@@ -22,7 +22,7 @@ export const DataInputNode = memo(function DataInputNode({
       <div className="text-xs text-gray-500">Type: {inputType}</div>
       {placeholder && (
         <div className="text-xs text-gray-400 truncate">
-          {placeholder}
+          Placeholder: {placeholder}
         </div>
       )}
     </BaseNode>

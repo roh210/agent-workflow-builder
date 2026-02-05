@@ -25,7 +25,7 @@ export const BaseNode: React.FC<BaseNodeProps> = memo(function BaseNode({
   return (
     <div
       className={cn(
-        "min-w-[180px] bg-white rounded-lg border-2",
+        "w-[250px] bg-white rounded-lg border-2",
         selected ? "border-blue-500" : "border-transparent",
         status === NodeStatus.IDLE && "border-gray-300",
         status === NodeStatus.RUNNING && "animate-pulse border-yellow-500",

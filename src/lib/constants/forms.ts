@@ -1,0 +1,1 @@
+export const INPUT_CLASSNAME = "w-full border border-gray-600 bg-gray-800 text-white rounded px-3 py-2";
