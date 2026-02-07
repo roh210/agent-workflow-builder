@@ -1,122 +1,235 @@
-AWB-011: Create Config Form Components
+AWB-012: Create Workflow CRUD API Routes
 Type: Feature
-Priority: P1 - High
+Priority: P0 - Critical
 Story Points: 3
-Sprint: Phase 3 - Configuration Panel
+Sprint: Phase 4 - API Routes
 Assignee: Roheena
-Blocked By: AWB-010
+Blocked By: AWB-002
 Description
-Create individual configuration form components for each of the 7 node types. These forms allow users to edit node-specific settings.
+Create Next.js API routes for creating, reading, updating, and deleting workflows. These routes persist workflow data to PostgreSQL via Prisma.
 User Story
 
-As a user, I want to configure each node's settings through an intuitive form so my workflow behaves as intended.
+As a user, I want my workflows to be saved so I can close the browser and return to them later.
 
 Acceptance Criteria
 
- DataInputConfig form with input type selector and placeholder field
- WebScrapingConfig form with URL field and summarize toggle
- StructuredOutputConfig form with JSON schema editor
- EmbeddingConfig form with model selector
- SimilaritySearchConfig form with topK slider and threshold input
- LLMTaskConfig form with model selector, temperature slider, prompt textarea
- DataOutputConfig form with format selector
- All forms update Zustand store on change
+ POST /api/workflows - Creates new workflow, returns workflow with ID
+ GET /api/workflows - Lists all workflows (paginated)
+ GET /api/workflows/[id] - Returns single workflow with nodes and edges
+ PUT /api/workflows/[id] - Updates workflow (full replacement)
+ DELETE /api/workflows/[id] - Deletes workflow and all associated nodes/edges
+ All routes return proper HTTP status codes
+ All routes handle errors gracefully
 
 Technical Details
 Files to create:
-src/app/components/panels/configs/
-├── DataInputConfig.tsx
-├── WebScrapingConfig.tsx
-├── StructuredOutputConfig.tsx
-├── EmbeddingConfig.tsx
-├── SimilaritySearchConfig.tsx
-├── LLMTaskConfig.tsx
-├── DataOutputConfig.tsx
-└── index.ts
-Example - LLMTaskConfig.tsx:
-typescript'use client';
+src/app/api/workflows/
+├── route.ts              # GET (list), POST (create)
+└── [id]/
+    └── route.ts          # GET, PUT, DELETE
+POST /api/workflows (route.ts):
+typescriptimport { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db/prisma';
+import { z } from 'zod';
 
-import { useWorkflowStore } from '@/store/workflow-store';
-import type { LLMTaskNodeConfig } from '@/types';
+const CreateWorkflowSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().optional(),
+});
 
-interface Props {
-  nodeId: string;
-  config: LLMTaskNodeConfig;
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validated = CreateWorkflowSchema.parse(body);
+
+    const workflow = await prisma.workflow.create({
+      data: {
+        name: validated.name,
+        description: validated.description,
+        status: 'DRAFT',
+      },
+    });
+
+    return NextResponse.json(workflow, { status: 201 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.errors },
+        { status: 400 }
+      );
+    }
+    console.error('Create workflow error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }
 
-export function LLMTaskConfig({ nodeId, config }: Props) {
-  const updateNodeConfig = useWorkflowStore((s) => s.updateNodeConfig);
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const skip = (page - 1) * limit;
 
-  const handleChange = (field: keyof LLMTaskNodeConfig, value: any) => {
-    updateNodeConfig(nodeId, { ...config, [field]: value });
-  };
+    const [workflows, total] = await Promise.all([
+      prisma.workflow.findMany({
+        skip,
+        take: limit,
+        orderBy: { updatedAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: { select: { nodes: true } },
+        },
+      }),
+      prisma.workflow.count(),
+    ]);
 
-  return (
-    <div className="space-y-4">
-      {/* Model Selection */}
-      <div>
-        <label className="block text-sm font-medium mb-1">Model</label>
-        <select
-          value={config.model}
-          onChange={(e) => handleChange('model', e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        >
-          <option value="gpt-4o">GPT-4o</option>
-          <option value="gpt-4o-mini">GPT-4o Mini</option>
-          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-        </select>
-      </div>
-
-      {/* Temperature */}
-      <div>
-        <label className="block text-sm font-medium mb-1">
-          Temperature: {config.temperature}
-        </label>
-        <input
-          type="range"
-          min="0"
-          max="2"
-          step="0.1"
-          value={config.temperature}
-          onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
-          className="w-full"
-        />
-      </div>
-
-      {/* System Prompt */}
-      <div>
-        <label className="block text-sm font-medium mb-1">System Prompt</label>
-        <textarea
-          value={config.systemPrompt || ''}
-          onChange={(e) => handleChange('systemPrompt', e.target.value)}
-          rows={3}
-          className="w-full border rounded px-3 py-2"
-          placeholder="You are a helpful assistant..."
-        />
-      </div>
-
-      {/* User Prompt Template */}
-      <div>
-        <label className="block text-sm font-medium mb-1">Prompt Template</label>
-        <textarea
-          value={config.promptTemplate}
-          onChange={(e) => handleChange('promptTemplate', e.target.value)}
-          rows={4}
-          className="w-full border rounded px-3 py-2"
-          placeholder="Use {{input}} to reference incoming data"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Use {"{{input}}"} to reference data from connected nodes
-        </p>
-      </div>
-    </div>
-  );
+    return NextResponse.json({
+      workflows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('List workflows error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }
-Config field mapping:
-Node TypeFieldsDataInputinputType (text/json/file), placeholder, defaultValueWebScrapingurl, selector?, summarize (boolean), maxLengthStructuredOutputschema (JSON), strictModeEmbeddingmodel, dimensions?SimilaritySearchtopK, threshold, metric (cosine/euclidean)LLMTaskmodel, temperature, systemPrompt, promptTemplate, maxTokensDataOutputformat (json/text/markdown), includeMetadata
+GET/PUT/DELETE /api/workflows/[id] (route.ts):
+typescriptimport { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db/prisma';
+import { z } from 'zod';
+
+interface RouteParams {
+  params: { id: string };
+}
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  try {
+    const workflow = await prisma.workflow.findUnique({
+      where: { id: params.id },
+      include: {
+        nodes: true,
+        edges: true,
+      },
+    });
+
+    if (!workflow) {
+      return NextResponse.json(
+        { error: 'Workflow not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(workflow);
+  } catch (error) {
+    console.error('Get workflow error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest, { params }: RouteParams) {
+  try {
+    const body = await request.json();
+    
+    // Transaction: update workflow, replace nodes and edges
+    const workflow = await prisma.$transaction(async (tx) => {
+      // Delete existing nodes and edges
+      await tx.edge.deleteMany({ where: { workflowId: params.id } });
+      await tx.node.deleteMany({ where: { workflowId: params.id } });
+
+      // Update workflow with new nodes and edges
+      return tx.workflow.update({
+        where: { id: params.id },
+        data: {
+          name: body.name,
+          description: body.description,
+          status: body.status,
+          nodes: {
+            create: body.nodes?.map((node: any) => ({
+              id: node.id,
+              type: node.type,
+              label: node.label,
+              positionX: node.position.x,
+              positionY: node.position.y,
+              config: node.config,
+            })),
+          },
+          edges: {
+            create: body.edges?.map((edge: any) => ({
+              id: edge.id,
+              sourceNodeId: edge.source,
+              targetNodeId: edge.target,
+              sourceHandle: edge.sourceHandle,
+              targetHandle: edge.targetHandle,
+            })),
+          },
+        },
+        include: {
+          nodes: true,
+          edges: true,
+        },
+      });
+    });
+
+    return NextResponse.json(workflow);
+  } catch (error) {
+    console.error('Update workflow error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  try {
+    await prisma.workflow.delete({
+      where: { id: params.id },
+    });
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error('Delete workflow error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+Testing
+bash# Create workflow
+curl -X POST http://localhost:3000/api/workflows \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My First Workflow"}'
+
+# List workflows
+curl http://localhost:3000/api/workflows
+
+# Get single workflow
+curl http://localhost:3000/api/workflows/{id}
+
+# Delete workflow
+curl -X DELETE http://localhost:3000/api/workflows/{id}
 Definition of Done
 
- All 7 config forms created
- Forms update store correctly
- No TypeScript errors
- Forms render in ConfigPanel based on node type
+ All 5 endpoints working
+ Proper error handling with status codes
+ Transactions used for complex updates
+ Tested with curl or Postman
+ Commit: feat: add workflow CRUD API routes

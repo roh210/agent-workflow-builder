@@ -8,50 +8,46 @@ datasource db {
 }
 
 model Workflow {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   description String?
-  status      String   @default("draft")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  nodes       Node[]
+  status      String      @default("draft")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   edges       Edge[]
   executions  Execution[]
+  nodes       Node[]
 }
 
 model Node {
-  id         String   @id
-  workflowId String
-  type       String
-  positionX  Int
-  positionY  Int
-  label      String
-  config     Json
-  output     Json?
-  status     String   @default("idle")
-  error      String?
-  
-  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  
-  sourceEdges Edge[] @relation("SourceNode")
-  targetEdges Edge[] @relation("TargetNode")
-  
+  id          String   @id
+  workflowId  String
+  type        String
+  positionX   Int
+  positionY   Int
+  label       String
+  config      Json
+  output      Json?
+  status      String   @default("idle")
+  error       String?
+  sourceEdges Edge[]   @relation("SourceNode")
+  targetEdges Edge[]   @relation("TargetNode")
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
   @@index([workflowId])
 }
 
 model Edge {
-  id           String  @id @default(cuid())
+  id           String   @id @default(cuid())
   workflowId   String
   source       String
   target       String
   sourceHandle String?
   targetHandle String?
-  
-  workflow     Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   sourceNode   Node     @relation("SourceNode", fields: [source], references: [id], onDelete: Cascade)
   targetNode   Node     @relation("TargetNode", fields: [target], references: [id], onDelete: Cascade)
-  
+  workflow     Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
   @@unique([source, target])
   @@index([workflowId])
   @@index([source])
@@ -59,18 +55,17 @@ model Edge {
 }
 
 model Execution {
-  id              String    @id @default(cuid())
-  workflowId      String
-  status          String    @default("running")
-  completedNodes  Int       @default(0)
-  totalNodes      Int
-  currentNodeId   String?
-  result          Json?
-  error           String?
-  startedAt       DateTime  @default(now())
-  completedAt     DateTime?
-  
-  workflow        Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  
+  id             String    @id @default(cuid())
+  workflowId     String
+  status         String    @default("running")
+  completedNodes Int       @default(0)
+  totalNodes     Int
+  currentNodeId  String?
+  result         Json?
+  error          String?
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+  workflow       Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
   @@index([workflowId])
 }

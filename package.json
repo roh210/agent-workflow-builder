@@ -9,7 +9,11 @@
     "start": "next start",
     "lint": "eslint",
     "clean": "rmdir /s /q .next 2>nul || rm -rf .next",
-    "reset": "npm run clean && npm install"
+    "reset": "npm run clean && npm install",
+    "db:generate": "dotenv -e .env -- prisma generate",
+    "db:migrate": "dotenv -e .env -- prisma migrate dev",
+    "db:studio": "dotenv -e .env -- prisma studio",
+    "db:push": "dotenv -e .env -- prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
@@ -33,6 +37,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
