@@ -15,18 +15,23 @@ export interface CreateWorkflowResponse {
 export interface GetWorkflowResponse {
   workflow: Workflow;
 }
-
+export interface WorkflowListItem{
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+  nodeCount: number;
+  status: WorkflowStatus;
+}
 export interface ListWorkflowsResponse {
-  workflows: Array<{
-    id: string;
-    name: string;
-    description?: string;
-    createdAt: string;
-    updatedAt: string;
-    nodeCount: number;
-    status: WorkflowStatus;
-  }>;
-  total: number;
+  workflows: WorkflowListItem[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+  totalPages: number;
+  };
 }
 
 export interface UpdateWorkflowRequest {

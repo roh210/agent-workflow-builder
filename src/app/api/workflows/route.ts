@@ -14,7 +14,7 @@ export const POST = async (request: NextRequest) => {
         description: validated.description,
       },
     });
-    return NextResponse.json(workflow, { status: 201 });
+    return NextResponse.json({workflow}, { status: 201 });
   } catch (error) {
     return handleApiError(error, "createWorkflow");
   }
@@ -38,12 +38,26 @@ export const GET = async (request: NextRequest) => {
           name: true,
           status: true,
           description: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: { nodes: true },
+          }
         },
       }),
     ]);
+    const transformedWorkflows = workflows.map(wf => ({
+      id: wf.id,
+      name: wf.name,
+      description: wf.description,
+      createdAt: wf.createdAt,
+      updatedAt: wf.updatedAt,
+      nodeCount: wf._count.nodes,
+      status: wf.status,
+    }));
     return NextResponse.json(
       {
-        workflows: workflows,
+        workflows: transformedWorkflows,
         pagination: {
           total: totalCount,
           page: pageNum,
