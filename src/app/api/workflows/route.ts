@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { handleApiError } from "@/lib/utils/api-error";
 import { CreateWorkflowSchema } from "@/lib/validation/workflow-schemas";
+import { dbWorkflowToListItems } from "@/modules/workflows/workflow.transformer";
 import { NextRequest, NextResponse } from "next/server";
 
 
@@ -46,18 +47,9 @@ export const GET = async (request: NextRequest) => {
         },
       }),
     ]);
-    const transformedWorkflows = workflows.map(wf => ({
-      id: wf.id,
-      name: wf.name,
-      description: wf.description,
-      createdAt: wf.createdAt,
-      updatedAt: wf.updatedAt,
-      nodeCount: wf._count.nodes,
-      status: wf.status,
-    }));
     return NextResponse.json(
       {
-        workflows: transformedWorkflows,
+        workflows: dbWorkflowToListItems(workflows),
         pagination: {
           total: totalCount,
           page: pageNum,

@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db/prisma";
 import { handleApiError } from "@/lib/utils/api-error";
 import { CreateWorkflowSchema } from "@/lib/validation/workflow-schemas";
+import {dbWorkflowToDetail } from "@/modules/workflows/workflow.transformer";
 import { NextRequest, NextResponse } from "next/server";
-
 
 export const DELETE = async (
   request: NextRequest,
@@ -37,10 +37,10 @@ export const GET = async (
     if (!workflow) {
       return NextResponse.json(
         { error: "Workflow not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
-    return NextResponse.json(workflow);
+    return NextResponse.json({ workflow: dbWorkflowToDetail(workflow) });
   } catch (error) {
     return handleApiError(error, "getWorkflow");
   }

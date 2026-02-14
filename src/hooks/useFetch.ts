@@ -1,3 +1,4 @@
+import { handleApiError } from "@/lib/utils/api-error";
 import { useEffect, useState } from "react";
 
 export const useFetch = <T>(url: string, method?: RequestInit) => {
@@ -11,7 +12,7 @@ export const useFetch = <T>(url: string, method?: RequestInit) => {
       try {
         const res = await fetch(url, method);
         if (!res.ok) {
-          setError("Failed to fetch data");
+          setError(`Error: ${res.status} ${res.statusText}`);
           return;
         }
         const data = await res.json();

@@ -6,15 +6,15 @@ import {
   ListWorkflowsResponse,
   WorkflowListItem,
 } from "@/types";
-import { WorkflowCard } from "./components/ui/WorkflowCard";
-import { LoadingUI } from "./components/ui/LoadingUI";
-import { EmptyState } from "./components/ui/EmptyState";
+import { WorkflowCard } from "../components/ui/WorkflowCard";
+import { LoadingUI } from "../components/ui/LoadingUI";
+import { EmptyState } from "../components/ui/EmptyState";
 import { useFetch } from "@/hooks/useFetch";
-import { ErrorUI } from "./components/ui/ErrorUI";
+import { ErrorUI } from "../components/ui/ErrorUI";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@/hooks/useMutation";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function Home() {
   const { data, loading, error, refetch } =
@@ -22,8 +22,9 @@ export default function Home() {
   const [workflows, setWorkflows] = useState<WorkflowListItem[]>(
     data?.workflows || [],
   );
-
-  useEffect(() => {
+const debounceHandleCreate = useDebounce(() => {createWorkflow({ name: "New Workflow" }); }, 500);
+ 
+useEffect(() => {
     if (data?.workflows) setWorkflows(data.workflows);
   }, [data]);
 
@@ -77,13 +78,17 @@ export default function Home() {
     },
   });
 
+  const handleCreateWorkflow = () => {
+    debounceHandleCreate();
+  }
+
   return (
     <main className="h-screen w-full flex flex-col p-8">
       <div className="flex-1">
         <button
           disabled={creating}
           className="mb-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer"
-          onClick={() => createWorkflow({ name: "Untitled Workflow" })}
+          onClick={handleCreateWorkflow}
         >
           {creating ? "Creating..." : "+ New Workflow"}
         </button>

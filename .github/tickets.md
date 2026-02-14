@@ -1,27 +1,26 @@
-AWB-014: Create Workflow List Page
-FieldValueTypeFeaturePriorityP0 - CriticalStory Points2SprintPhase 4 - Workflow PersistenceAssigneeRoheenaLabelspage, ui, frontendBlocked ByAWB-013
+AWB-015: Create Workflow Editor Page
+FieldValueTypeFeaturePriorityP0 - CriticalStory Points3SprintPhase 4 - Workflow PersistenceAssigneeRoheenaLabelspage, editor, frontendBlocked ByAWB-014
 Description
-Create the landing page that displays all workflows and allows users to create new ones or open existing ones.
+Create the workflow editor page with dynamic routing that loads a specific workflow by ID.
 User Story
 
-As a user, I want to see all my workflows so I can choose which one to edit or create a new one.
+As a user, I want to open a specific workflow and see my previously saved nodes and connections.
 
 Acceptance Criteria
 
- Page loads at root URL (/)
- Fetches and displays list of workflows from API
- Shows workflow name, node count, last updated date
- "New Workflow" button creates workflow via POST and navigates to editor
- Clicking a workflow navigates to /workflow/[id]
- Delete button removes workflow (with confirmation)
- Empty state message when no workflows exist
- Loading state while fetching
- Error handling if fetch fails
+ Page accessible at /workflow/[id]
+ Fetches workflow data by ID from API
+ Transforms database format to React Flow format
+ Loads nodes and edges into Zustand store
+ Stores workflowId in store for auto-save
+ Shows loading state while fetching
+ Shows error state if workflow not found (404)
+ "Back" link returns to workflow list
+ Resets store when navigating away
 
 Definition of Done
 
- List page is the root page
- CRUD operations work correctly
- Navigation to editor works
- Responsive layout
-
+ Dynamic route works
+ Workflow loads into canvas
+ Error states handled
+ Navigation works both ways
