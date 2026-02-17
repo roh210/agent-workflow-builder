@@ -15,7 +15,6 @@ export const NodeSideBar: React.FC = () => {
   return (
     <aside className="w-64 h-full border-r">
       <div className="p-4 border-b border-gray-300 font-bold text-md uppercase flex gap-4">
-        <Link href="/" className="font-bold text-4xl cursor-pointer">←</Link>
         Drag Nodes on to Canvas
       </div>
       <div className="p-4 space-y-4">

@@ -331,3 +331,4 @@ export const useSelectedNode = () => {
 export const useIsExecuting = () => useWorkflowStore((state) => state.isExecuting);
 export const useIsDirty = () => useWorkflowStore((state) => state.isDirty);
 export const useWorkflowName = () => useWorkflowStore((state) => state.workflowName);
+export const useWorkflowId = () => useWorkflowStore((state) => state.workflowId);

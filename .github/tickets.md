@@ -1,26 +1,24 @@
-AWB-015: Create Workflow Editor Page
-FieldValueTypeFeaturePriorityP0 - CriticalStory Points3SprintPhase 4 - Workflow PersistenceAssigneeRoheenaLabelspage, editor, frontendBlocked ByAWB-014
+AWB-016: Create Workflow Header Component
+FieldValueTypeFeaturePriorityP1 - HighStory Points2SprintPhase 4 - Workflow PersistenceAssigneeRoheenaLabelsheader, ui, frontendBlocked ByAWB-015
 Description
-Create the workflow editor page with dynamic routing that loads a specific workflow by ID.
+Create the header component for the workflow editor showing workflow name, save status, and run button.
 User Story
 
-As a user, I want to open a specific workflow and see my previously saved nodes and connections.
+As a user, I want to see and edit my workflow name and know when my changes are saved.
 
 Acceptance Criteria
 
- Page accessible at /workflow/[id]
- Fetches workflow data by ID from API
- Transforms database format to React Flow format
- Loads nodes and edges into Zustand store
- Stores workflowId in store for auto-save
- Shows loading state while fetching
- Shows error state if workflow not found (404)
- "Back" link returns to workflow list
- Resets store when navigating away
+ Header displays at top of editor page
+ Back button/link returns to workflow list
+ Workflow name is editable inline
+ Name changes update Zustand store
+ Save status indicator shows (idle/saving/saved/error)
+ Run button triggers workflow execution
+ Run button disabled while execution in progress
+ Shows execution status (completed/failed)
 
 Definition of Done
 
- Dynamic route works
- Workflow loads into canvas
- Error states handled
- Navigation works both ways
+ Header component created
+ All elements functional
+ Integrated with auto-save and execution hooks

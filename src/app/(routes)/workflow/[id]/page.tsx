@@ -1,6 +1,7 @@
 "use client";
 import { WorkflowCanvas } from "@/app/components/canvas/WorkflowCanvas";
 import { ConfigPanel } from "@/app/components/panels/ConfigPanel";
+import { HeaderPanel } from "@/app/components/panels/HeaderPanel";
 import { NodeSideBar } from "@/app/components/panels/NodeSideBar";
 import { ErrorUI } from "@/app/components/ui/ErrorUI";
 import { LoadingUI } from "@/app/components/ui/LoadingUI";
@@ -36,14 +37,15 @@ export default function CanvasEditor({
   }, [data, setWorkflow, resetWorkflow, id]);
 
   return (
-    <main className="h-screen w-full flex">
-      <NodeSideBar />
-      <div className="flex-1">
+    <main className="h-screen w-full flex flex-col">
+      <HeaderPanel />
+      <div className="flex-row flex-1 flex overflow-hidden">
+        <NodeSideBar />
         {loading && <LoadingUI />}
         {!loading && !error && <WorkflowCanvas />}
         {!loading && error && <ErrorUI message={error} />}
-      </div>
       <ConfigPanel />
+      </div>
     </main>
   );
 }
