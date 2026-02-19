@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { handleApiError } from "@/lib/utils/api-error";
 import { CreateWorkflowSchema } from "@/lib/validation/workflow-schemas";
-import {dbWorkflowToDetail } from "@/modules/workflows/workflow.transformer";
+import {apiEdgeToDbEdge, apiNodeToDbNode, dbWorkflowToDetail } from "@/modules/workflows/workflow.transformer";
 import { NextRequest, NextResponse } from "next/server";
 
 export const DELETE = async (
@@ -74,23 +74,10 @@ export const PUT = async (
           name: validated.name,
           description: validated.description,
           nodes: {
-            create: body.nodes.map((node: any) => ({
-              id: node.id,
-              type: node.type,
-              label: node.data.label,
-              positionX: node.position.x,
-              positionY: node.position.y,
-              config: node.data.config,
-            })),
+           create: body.nodes.map(apiNodeToDbNode),
           },
           edges: {
-            create: body.edges.map((edge: any) => ({
-              id: edge.id,
-              source: edge.source,
-              target: edge.target,
-              sourceHandle: edge.sourceHandle,
-              targetHandle: edge.targetHandle,
-            })),
+            create: body.edges.map(apiEdgeToDbEdge),
           },
         },
         include: {
@@ -100,7 +87,7 @@ export const PUT = async (
       });
     });
 
-    return NextResponse.json(workflow);
+    return NextResponse.json({ workflow: dbWorkflowToDetail(workflow) });
   } catch (error) {
     return handleApiError(error, "updateWorkflow");
   }

@@ -1,17 +1,16 @@
 "use client";
-
-import { useAutoSave } from "@/hooks/useAutoSave";
 import {
   useWorkflowId,
   useWorkflowName,
   useWorkflowStore,
 } from "@/store/workflow-store";
 import React, { useEffect } from "react";
-import { STATUS_CONFIG } from ".";
 import { useWorkflowExecution } from "@/hooks/useWorkflowExecution";
 import Link from "next/link";
+import { SaveStatus } from "@/types/ui";
+import { SaveIndicator } from "../ui/SaveIndicator";
 
-export const HeaderPanel: React.FC = () => {
+export const HeaderPanel: React.FC<{ saveStatus: SaveStatus }> = ({ saveStatus }) => {
   const storeWorkflowName = useWorkflowName();
   const updateWorkflowStoreName = useWorkflowStore(
     (state) => state.setWorkflowName,
@@ -19,7 +18,6 @@ export const HeaderPanel: React.FC = () => {
   const workflowId = useWorkflowId();
   const [workflowName, setWorkflowName] = React.useState(storeWorkflowName);
   const [isEditing, setIsEditing] = React.useState(false);
-  const saveStatus = useAutoSave(workflowId || "");
   const { isExecuting, executeWorkflow } = useWorkflowExecution(workflowId);
 
   useEffect(() => {
@@ -76,9 +74,7 @@ export const HeaderPanel: React.FC = () => {
         )}
       </div>
       <div className="flex items-center gap-8">
-        <div className={STATUS_CONFIG[saveStatus].color}>
-          {STATUS_CONFIG[saveStatus].text}
-      </div>
+        <SaveIndicator status={saveStatus} />
         <button
           onClick={handleRunButton}
           disabled={isExecuting}

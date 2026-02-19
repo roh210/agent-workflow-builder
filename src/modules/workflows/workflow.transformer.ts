@@ -74,5 +74,25 @@ export const dbWorkflowToDetail = (workflow: WorkflowWithNodesAndEdges) => {
   };
 };
 //API => DB for PUT request
-export const apiNodeToDbNode = (node: WorkflowNode) => {};
-export const apiEdgeToDbEdge = (edge: WorkflowEdge) => {};
+export const apiNodeToDbNode = (node: WorkflowNode) => {
+  return {
+    id: node.id,
+    type: node.type,
+    label: node.data.label,
+    positionX: node.position.x,
+    positionY: node.position.y,
+    config: node.data.config as any, // Prisma Json
+    output: node.data.output as any, // Prisma Json
+    status: node.data.status,
+    error: node.data.error,
+  };
+};
+export const apiEdgeToDbEdge = (edge: WorkflowEdge) => {
+  return {
+    id: edge.id,
+    source: edge.source,
+    target: edge.target,
+    sourceHandle: edge.sourceHandle,
+    targetHandle: edge.targetHandle,
+  };
+};

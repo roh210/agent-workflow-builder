@@ -5,6 +5,7 @@ import { HeaderPanel } from "@/app/components/panels/HeaderPanel";
 import { NodeSideBar } from "@/app/components/panels/NodeSideBar";
 import { ErrorUI } from "@/app/components/ui/ErrorUI";
 import { LoadingUI } from "@/app/components/ui/LoadingUI";
+import { useAutoSave } from "@/hooks/useAutoSave";
 import { useFetch } from "@/hooks/useFetch";
 import { useWorkflowStore } from "@/store/workflow-store";
 import { GetWorkflowResponse } from "@/types";
@@ -22,6 +23,7 @@ export default function CanvasEditor({
   );
   const setWorkflow = useWorkflowStore((state) => state.setWorkflow);
   const resetWorkflow = useWorkflowStore((state) => state.resetWorkflow);
+  const saveStatus = useAutoSave(id); // Pass the workflow ID to the auto-save hook
 
   useEffect(() => {
     if (data) {
@@ -38,7 +40,7 @@ export default function CanvasEditor({
 
   return (
     <main className="h-screen w-full flex flex-col">
-      <HeaderPanel />
+      <HeaderPanel saveStatus={saveStatus} />
       <div className="flex-row flex-1 flex overflow-hidden">
         <NodeSideBar />
         {loading && <LoadingUI />}
