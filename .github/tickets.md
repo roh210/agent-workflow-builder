@@ -1,25 +1,34 @@
-AWB-017: Implement Auto-Save Functionality
-FieldValueTypeFeaturePriorityP1 - HighStory Points2SprintPhase 4 - Workflow PersistenceAssigneeRoheenaLabelsauto-save, hooks, frontendBlocked ByAWB-016
+Phase 5: Execution API
+
+AWB-018: Create Execution API Routes
+FieldValueTypeFeaturePriorityP0 - CriticalStory Points2SprintPhase 5 - Execution APIAssigneeRoheenaLabelsapi, execution, backendBlocked ByAWB-013
 Description
-Implement auto-save that automatically persists workflow changes to the database after a debounced delay.
+Create API endpoints to trigger workflow execution and check execution status.
 User Story
 
-As a user, I want my changes automatically saved so I don't lose work.
+As a user, I want to run my workflow and check its progress.
 
 Acceptance Criteria
+POST /api/workflows/[id]/execute
 
- Changes to nodes/edges/name trigger auto-save
- Save is debounced (2 second delay)
- Multiple rapid changes only trigger one save
- Save calls PUT /api/workflows/[id]
- Status updates: idle → saving → saved → idle
- Error status shown if save fails
- Does not save on initial load (only on changes)
- Cleanup on component unmount
+ Validates workflow exists and has nodes
+ Creates Execution record with PENDING status
+ Triggers async execution (non-blocking)
+ Returns 202 with executionId immediately
+ Returns 400 if workflow has no nodes
+ Returns 404 if workflow not found
+
+GET /api/executions/[id]
+
+ Returns execution status
+ Includes currentNodeId (which node is running)
+ Includes error message if failed
+ Includes node outputs for completed nodes
+ Returns 404 if execution not found
 
 Definition of Done
 
- useAutoSave hook created
- SaveIndicator component created
- Integrated with WorkflowHeader
- Debounce working correctly
+ Both endpoints working
+ Async execution doesn't block response
+ Status tracking works
+ Tested with postman

@@ -57,7 +57,7 @@ export interface ExecuteWorkflowRequest {
 
 export interface ExecuteWorkflowResponse {
   executionId: string;
-  status: 'started' | 'completed' | 'failed';
+  status: 'running' | 'completed' | 'failed';
   result?: unknown;
   error?: string;
 }
