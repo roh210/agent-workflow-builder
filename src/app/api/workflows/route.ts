@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { handleApiError } from "@/lib/utils/api-error";
-import { CreateWorkflowSchema } from "@/lib/validation/workflow-schemas";
+import { CreateWorkflowSchema } from "@/modules/validation/workflow-schemas";
 import { dbWorkflowToListItems } from "@/modules/workflows/workflow.transformer";
 import { NextRequest, NextResponse } from "next/server";
 

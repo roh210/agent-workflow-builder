@@ -1,34 +1,31 @@
-Phase 5: Execution API
+Phase 6: Edge Validation
 
-AWB-018: Create Execution API Routes
-FieldValueTypeFeaturePriorityP0 - CriticalStory Points2SprintPhase 5 - Execution APIAssigneeRoheenaLabelsapi, execution, backendBlocked ByAWB-013
+AWB-019: Implement Edge Validation Rules
+FieldValueTypeFeaturePriorityP1 - HighStory Points3SprintPhase 6 - Edge ValidationAssigneeRoheenaLabelsvalidation, canvas, logicBlocked ByAWB-010
 Description
-Create API endpoints to trigger workflow execution and check execution status.
+Implement validation rules for node connections to prevent invalid workflows.
 User Story
 
-As a user, I want to run my workflow and check its progress.
+As a user, I want the system to prevent invalid connections so my workflows always work.
 
 Acceptance Criteria
-POST /api/workflows/[id]/execute
 
- Validates workflow exists and has nodes
- Creates Execution record with PENDING status
- Triggers async execution (non-blocking)
- Returns 202 with executionId immediately
- Returns 400 if workflow has no nodes
- Returns 404 if workflow not found
+ Prevent self-connections (node connecting to itself)
+ Prevent duplicate edges (same source→target)
+ Validate type compatibility (define which nodes can connect)
+ Detect and prevent cycles (no circular dependencies)
+ Show error toast/notification explaining why connection is invalid
+ Invalid drop targets could show visual feedback (stretch)
 
-GET /api/executions/[id]
+Technical Notes
 
- Returns execution status
- Includes currentNodeId (which node is running)
- Includes error message if failed
- Includes node outputs for completed nodes
- Returns 404 if execution not found
+Type compatibility matrix needed (which nodes can connect to which)
+Cycle detection using DFS algorithm
+Integration with canvas onConnect handler
 
 Definition of Done
 
- Both endpoints working
- Async execution doesn't block response
- Status tracking works
- Tested with postman
+ All 4 validation rules working
+ User feedback on invalid connections
+ Unit tests for validation logic
+ Commit: feat: add edge validation

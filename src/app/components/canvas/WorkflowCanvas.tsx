@@ -1,5 +1,4 @@
 "use client";
-
 import ReactFlow, {
   Background,
   Controls,
@@ -16,6 +15,8 @@ import { useWorkflowStore } from "@/store/workflow-store";
 import React, { useCallback, useMemo } from "react";
 import { NodeType } from "@/types";
 import { nodeTypes } from "../nodes";
+import { validateConnection } from "@/modules/validation/edge-validation";
+import { toast, Toaster } from "sonner";
 
 const edgeTypes = {};
 
@@ -102,10 +103,15 @@ export const WorkflowCanvas: React.FC = () => {
   const onConnect = useCallback(
     (connection: Connection) => {
       if (connection.source && connection.target) {
+        const error = validateConnection(connection, storeNodes, storeEdges);
+        if (error) {
+          toast.error(error);
+          return;
+        }
         storeAddEdge(connection.source, connection.target);
       }
     },
-    [storeAddEdge],
+    [storeAddEdge, storeEdges, storeNodes],
   );
 
   const onDrop = useCallback(
@@ -148,6 +154,7 @@ export const WorkflowCanvas: React.FC = () => {
         <Background />
         <Controls />
         <MiniMap />
+        <Toaster position="bottom-right" richColors />
       </ReactFlow>
     </div>
   );
