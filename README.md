@@ -28,8 +28,8 @@ This tool abstracts that complexity into a visual interface where pipelines are 
 ### Current (v1 - RAG Pipeline Builder)
 - 🎨 **Visual Canvas** — Drag-and-drop node-based workflow editor
 - 🔗 **7 Core Nodes** — Data Input, Web Scraping, Structured Output, Embeddings, Similarity Search, LLM Task, Data Output
-- ✅ **Smart Validation** — Type-safe connections with cycle detection
-- 💾 **Auto-Save** — Changes persist automatically
+- ✅ **Smart Validation** — Type-safe connections with cycle detection and compatibility matrix
+- 💾 **Auto-Save** — Changes persist automatically with debounced PUT requests
 - ⚡ **Execution Engine** — Topologically-sorted execution with real-time status
 - 📊 **Output Inspection** — View results per node after execution
 
@@ -43,26 +43,53 @@ This tool abstracts that complexity into a visual interface where pipelines are 
 
 ---
 
-## Demo
+## Building a Valid Workflow
 
-**Example: Chat with Any Website**
+Workflows must follow the **node compatibility matrix** — each node only accepts specific inputs based on what it produces. Invalid connections are rejected with an error toast.
 
+### Node Data Flow
+
+| Node | Receives | Produces | Can Connect To |
+|------|----------|----------|----------------|
+| **Data Input** | Nothing — entry point | Raw text or JSON | Web Scraping, LLM Task, Embedding Generator, Structured Output |
+| **Web Scraping** | URL (text) | Scraped + summarised text | Structured Output, LLM Task, Embedding Generator, Data Output |
+| **Structured Output** | Unstructured text | Structured JSON object | Embedding Generator, LLM Task, Data Output |
+| **Embedding Generator** | Text | Vector (float array) | Similarity Search only |
+| **Similarity Search** | Query vector | Similar text chunks + scores | LLM Task, Data Output |
+| **LLM Task** | Text context | Text response | Data Output, Structured Output, Embedding Generator, LLM Task |
+| **Data Output** | Anything | Nothing — terminal node | Nothing |
+
+### Rules
+- ✅ Every workflow needs at least one **Data Input** node
+- ✅ Every workflow needs at least one **Data Output** node
+- ❌ Circular connections are not allowed (cycle detection enforced)
+- ❌ A node cannot connect to itself
+- ❌ Duplicate edges between the same two nodes are not allowed
+- ℹ️ **LLM Task → LLM Task** is valid for prompt chaining pipelines
+
+### Example Workflows
+
+**Simple LLM Pipeline:**
 ```
-[Data Input: "What is useEffect?"]
-         ↓
-[Web Scraping: react.dev/reference/useEffect]
-         ↓
-[Embedding Generator]
-         ↓
-[Similarity Search: topK=3]
-         ↓
-[LLM Task: "Answer based on context"]
-         ↓
-[Data Output: JSON]
+Data Input → LLM Task → Data Output
 ```
 
-<!-- Add GIF or screenshot here -->
-<!-- ![Demo](./docs/demo.gif) -->
+**RAG Pipeline (Chat with any website):**
+```
+Data Input → Embedding Generator → Similarity Search → LLM Task → Data Output
+                                         ↑
+                        Web Scraping ────┘
+```
+
+**Structured Data Extraction:**
+```
+Data Input → Web Scraping → Structured Output → Data Output
+```
+
+**Prompt Chaining:**
+```
+Data Input → LLM Task (summarise) → LLM Task (extract insights) → Data Output
+```
 
 ---
 
@@ -133,33 +160,6 @@ Open [http://localhost:3000](http://localhost:3000) to access the application.
 | AI | OpenAI API |
 | Styling | Tailwind CSS |
 
-### Project Structure
-
-```
-src/
-├── app/
-│   ├── api/                    # API routes
-│   │   ├── workflows/          # CRUD operations
-│   │   └── executions/         # Execution status
-│   ├── components/
-│   │   ├── canvas/             # React Flow canvas
-│   │   ├── nodes/              # Node components
-│   │   └── panels/             # Sidebar, config panels
-│   └── page.tsx                # Main application
-├── lib/
-│   ├── db/                     # Prisma client
-│   ├── execution/              # Execution engine
-│   │   ├── engine.ts           # Orchestrator
-│   │   ├── topological-sort.ts # Execution order
-│   │   └── executors/          # Node executors
-│   └── validation/             # Edge validation
-├── store/                      # Zustand store
-├── hooks/                      # Custom hooks
-├── types/                      # TypeScript types
-└── prisma/
-    └── schema.prisma           # Database schema
-```
-
 ### Data Flow
 
 ```
@@ -182,21 +182,38 @@ src/
         └──────────┘ └──────────┘ └──────────┘
 ```
 
+### Execution Order
+
+Nodes execute in **topological order** determined by Kahn's algorithm (BFS):
+
+```
+User clicks Run
+      ↓
+topologicalSort(nodes, edges)
+      ↓
+[dataInput, webScraping, embedding, similarity, llmTask, dataOutput]
+      ↓
+for each node in order:
+  output = executeNode(node, previousOutput)
+```
+
+This guarantees every node receives fully computed input from its dependencies before executing.
+
 ---
 
 ## Node Reference
 
 ### v1 Nodes
 
-| Node | Purpose | Config |
-|------|---------|--------|
-| **Data Input** | Entry point for workflows | `inputType`, `placeholder` |
-| **Web Scraping** | Fetch content from URLs | `url`, `summarize` |
-| **Structured Output** | Parse/validate against schema | `schema`, `strictMode` |
+| Node | Purpose | Key Config |
+|------|---------|------------|
+| **Data Input** | Entry point for workflows | `inputType`, `placeholder`, `defaultValue` |
+| **Web Scraping** | Fetch content from URLs | `url`, `shouldSummarize`, `summarizationModel` |
+| **Structured Output** | Extract JSON from text via LLM | `schemaDefinition`, `exampleOutput`, `model` |
 | **Embedding Generator** | Convert text to vectors | `model`, `dimensions` |
-| **Similarity Search** | Find relevant chunks | `topK`, `threshold` |
-| **LLM Task** | Generate with context | `model`, `temperature`, `promptTemplate` |
-| **Data Output** | Format final response | `format` |
+| **Similarity Search** | Find similar chunks in vector store | `topK`, `similarityThreshold` |
+| **LLM Task** | General LLM processing | `model`, `temperature`, `promptTemplate` |
+| **Data Output** | Format and display final result | `outputFormat`, `prettyPrint` |
 
 ---
 
@@ -206,10 +223,10 @@ src/
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/workflows` | List all workflows |
+| `GET` | `/api/workflows` | List all workflows (paginated) |
 | `POST` | `/api/workflows` | Create workflow |
-| `GET` | `/api/workflows/:id` | Get workflow with nodes/edges |
-| `PUT` | `/api/workflows/:id` | Update workflow |
+| `GET` | `/api/workflows/:id` | Get workflow with nodes and edges |
+| `PUT` | `/api/workflows/:id` | Update workflow (nodes + edges) |
 | `DELETE` | `/api/workflows/:id` | Delete workflow |
 | `POST` | `/api/workflows/:id/execute` | Trigger execution |
 
@@ -217,7 +234,7 @@ src/
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/executions/:id` | Get execution status |
+| `GET` | `/api/executions/:id` | Get execution status and progress |
 
 ---
 
@@ -229,8 +246,8 @@ src/
 # Unit tests
 npm run test
 
-# E2E tests
-npm run test:e2e
+# Watch mode
+npm run test:watch
 
 # Test coverage
 npm run test:coverage
@@ -239,35 +256,29 @@ npm run test:coverage
 ### Linting & Formatting
 
 ```bash
-# Lint
 npm run lint
-
-# Format
 npm run format
 ```
 
 ### Database Migrations
 
 ```bash
-# Create migration
 npx prisma migrate dev --name your_migration_name
-
-# Apply migrations (production)
-npx prisma migrate deploy
+npx prisma migrate deploy   # production
 ```
 
 ---
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
 ## Acknowledgments
 
 - [React Flow](https://reactflow.dev/) — Canvas library
-- [Sim Studio](https://github.com/simstudio) — Architecture inspiration
+- [Sim Studio](https://github.com/simstudioai/sim) — Architecture inspiration
 - [OpenAI](https://openai.com/) — LLM and embedding APIs
 
 ---
