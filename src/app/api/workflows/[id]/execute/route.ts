@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { handleApiError } from "@/lib/utils/api-error";
+import { executeWorkflow } from "@/modules/execution/engine";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (
@@ -34,7 +35,8 @@ export const POST = async (
         totalNodes: workflow.nodes.length,
       },
     });
-    // TODO: fire async execution non-blocking
+    //fire and forget the execution engine
+    executeWorkflow(execution.id).catch(console.error);
 
     return NextResponse.json({ executionId: execution.id , status: execution.status}, { status: 202 });
   } catch (error) {

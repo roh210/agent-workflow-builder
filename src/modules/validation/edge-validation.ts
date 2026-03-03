@@ -52,7 +52,6 @@ export const isValidTypeCompatibility = (
   }
   return true;
 };
-
 export const isCycle = (
   edges: WorkflowEdge[],
   nodes: WorkflowNode[],
